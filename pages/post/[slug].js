@@ -1,7 +1,8 @@
 import { createClient } from 'contentful';
-import Image from 'next/image';
 import { documentToReactComponents } from '@contentful/rich-text-react-renderer';
 import { BLOCKS } from '@contentful/rich-text-types';
+import Image from 'next/image';
+import Skeleton from 'components/Skeleton';
 
 const option = {
   renderNode: {
@@ -31,7 +32,7 @@ export const getStaticPaths = async () => {
   }));
   return {
     paths,
-    fallback: false,
+    fallback: true,
   };
 };
 
@@ -41,6 +42,15 @@ export const getStaticProps = async ({ params }) => {
     'fields.slug': params.slug,
   });
 
+  if (!items.length) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
   return {
     props: { post: items[0] },
     revalidate: 1,
@@ -48,6 +58,8 @@ export const getStaticProps = async ({ params }) => {
 };
 
 const Post = ({ post }) => {
+  if (!post) return <Skeleton />;
+
   const { featuredImage, title, publishedDate, content } = post.fields;
   console.log(content);
   return (
